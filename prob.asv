@@ -1,4 +1,16 @@
 
+function test()
+n_digit=4;
+n_color=6;
+
+
+load(['./4_6/','theta_data']);
+Pxs=theta_data.Pxs;
+taus=theta_data.taus;
+2
+
+end
+
 function big_loop()
 
 n_digits=[4];
@@ -21,9 +33,9 @@ ep=0.5;
 delta=0.1;
 
 save_path=['./',num2str(n_digit),'_',num2str(n_color),'/']
-    if ~exist(yourFolder, 'dir')
-       mkdir(yourFolder)
-    end
+if ~exist(save_path, 'dir')
+    mkdir(save_path)
+end
 
 
 all_comb=all_combinations(n_color,n_digit);
@@ -42,7 +54,7 @@ kn=total_CAL_queries(theta,ep,delta)
 
 end
 
-function kn=total_CAL_queries(theta,ep,delta)
+function [kn,k,n_queries]=total_CAL_queries(theta,ep,delta)
 
 log2 = @(x)log(x)/log(2);
 kn=2*theta*(log(log2(1/ep))+log(6^4/delta))*log2(1/ep);

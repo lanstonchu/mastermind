@@ -1,8 +1,24 @@
 
+function test()
+n_digit=4;
+n_color=8;
+
+
+load(['./4_8/','theta_data']);
+Pxs=theta_data.Pxs;
+taus=theta_data.taus;
+theta=theta_data.theta;
+
+ep=0.5;
+delta=0.1;
+[kn,k,n_queries]=total_CAL_queries(theta,ep,delta,n_digit,n_color)
+
+end
+
 function big_loop()
 
-n_digits=[2,3];
-n_colors=[4,6];
+n_digits=[4];
+n_colors=[6];
 
 n_loop=size(n_digits,2);
 
@@ -30,7 +46,7 @@ all_comb=all_combinations(n_color,n_digit);
 
 % h_star=[1,2,3,3];
 h_star=1:n_digit; %typical h_star
-create_record(h_star,all_comb,n_color,save_path); %hide this line to save run time
+% create_record(h_star,all_comb,n_color,save_path); %hide this line to save run time
 
 record_meta_reordered=relationship_flag_vs_dist(n_digit,save_path)
 
@@ -38,14 +54,17 @@ record_meta_reordered=relationship_flag_vs_dist(n_digit,save_path)
 
 [theta,Pxs]=get_theta(sorted_dist,n_color,save_path);
 
-kn=total_CAL_queries(theta,ep,delta)
+[kn,k,n_queries]=total_CAL_queries(theta,ep,delta,n_digit,n_color);
 
 end
 
-function kn=total_CAL_queries(theta,ep,delta)
+function [kn,k,n_queries]=total_CAL_queries(theta,ep,delta,n_digit,n_color)
 
 log2 = @(x)log(x)/log(2);
-kn=2*theta*(log(log2(1/ep))+log(6^4/delta))*log2(1/ep);
+n_queries=log2(1/ep);
+H_size=n_color^n_digit;
+k=2*theta*(log((1/ep)*H_size/delta));
+kn=k*n_queries;
 
 end
 
