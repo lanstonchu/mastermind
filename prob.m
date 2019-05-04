@@ -1,44 +1,30 @@
 
-function test()
-n_digit=4;
-n_color=8;
-
-
-load(['./4_8/','theta_data']);
-Pxs=theta_data.Pxs;
-taus=theta_data.taus;
-theta=theta_data.theta;
-
-ep=0.5;
-delta=0.1;
-[kn,k,n_queries]=total_CAL_queries(theta,ep,delta,n_digit,n_color)
-
-end
 
 function big_loop()
 
-n_digits=[4];
-n_colors=[6];
+n_digits=[4,4,4,4,4,4,4,4,4];
+n_colors=[2,3,4,5,6,7,8,9,10];
 
 n_loop=size(n_digits,2);
 
+setting_infos=[];
 for i=1:n_loop
     n_digit=n_digits(i);
     n_color=n_colors(i);
-    one_loop(n_digit,n_color);
+    [dist_2nd_best,ep,kn,k,n_queries]=one_loop(n_digit,n_color);
+    setting_infos=[setting_infos,[dist_2nd_best;ep;kn;k;n_queries]];
 end
 
-
+setting_infos
 end
 
-function one_loop(n_digit,n_color)
+function [dist_2nd_best,ep,kn,k,n_queries]=one_loop(n_digit,n_color)
 
-ep=0.5;
 delta=0.1;
 
-save_path=['./',num2str(n_digit),'_',num2str(n_color),'/']
-if ~exist(save_path, 'dir')
-    mkdir(save_path)
+setting_path=['./',num2str(n_digit),'_',num2str(n_color),'/']
+if ~exist(setting_path, 'dir')
+    mkdir(setting_path)
 end
 
 
@@ -46,14 +32,16 @@ all_comb=all_combinations(n_color,n_digit);
 
 % h_star=[1,2,3,3];
 h_star=1:n_digit; %typical h_star
-% create_record(h_star,all_comb,n_color,save_path); %hide this line to save run time
+% create_record(h_star,all_comb,n_color,setting_path); %hide this line to save run time
 
-record_meta_reordered=relationship_flag_vs_dist(n_digit,save_path)
+record_meta_reordered=relationship_flag_vs_dist(n_digit,setting_path)
 
-[sorted_dist, hist_dist]=check_unique_dist(save_path);
+[sorted_dist, hist_dist]=check_unique_dist(setting_path);
 
-[theta,Pxs]=get_theta(sorted_dist,n_color,save_path);
+[theta,Pxs]=get_theta(sorted_dist,n_color,setting_path);
 
+dist_2nd_best=record_meta_reordered(2,4);
+ep=dist_2nd_best;
 [kn,k,n_queries]=total_CAL_queries(theta,ep,delta,n_digit,n_color);
 
 end
@@ -68,7 +56,7 @@ kn=k*n_queries;
 
 end
 
-function [theta,Pxs]=get_theta(taus,n_color,save_path)
+function [theta,Pxs]=get_theta(taus,n_color,setting_path)
 
 n_tau=size(taus,2);
 
@@ -78,7 +66,7 @@ for i=1:n_tau
     if Px_last<1
         tau=taus(1,i);
         disp(['Now we are looking at tau ',num2str(i),': ',num2str(tau)])
-        Px=DIS(tau,n_color,save_path);
+        Px=DIS(tau,n_color,setting_path);
         Pxs=[Pxs,Px];
         Px_last=Px;
     elseif Px_last==1 % the last Px is already 1
@@ -98,13 +86,13 @@ theta_data.Pxs=Pxs;
 theta_data.taus=taus;
 theta_data.theta=theta;
 
-save([save_path,'theta_data'],'theta_data');
+save([setting_path,'theta_data'],'theta_data');
 
 end
 
-function Px=DIS(tau,n_color,save_path)
+function Px=DIS(tau,n_color,setting_path)
 
-load([save_path,'data_array']);
+load([setting_path,'data_array']);
 
 all_comb=record_array.comb;
 red=record_array.red;
@@ -153,9 +141,9 @@ Px=num_DIS_cases/n_comb;
 
 end
 
-function [sorted_dist, hist_dist]=check_unique_dist(save_path)
+function [sorted_dist, hist_dist]=check_unique_dist(setting_path)
 
-load([save_path,'data_array']);
+load([setting_path,'data_array']);
 
 dist=record_array.dist;
 
@@ -171,11 +159,11 @@ hist_dist=histcounts(dist,edge);
 hist_array=[sorted_dist;hist_dist];
 
 meta_data.hist_array=hist_array;
-save([save_path,'meta_data'],'meta_data');
+save([setting_path,'meta_data'],'meta_data');
 
 end
 
-function create_record(h_star,all_comb,n_color,save_path)
+function create_record(h_star,all_comb,n_color,setting_path)
 
 n_comb=size(all_comb,1);
 d=size(h_star,2);
@@ -195,14 +183,14 @@ record_array.red=record(:,end-2);
 record_array.white=record(:,end-1);
 record_array.dist=record(:,end);
 
-save([save_path,'data_array'],'record_array')
+save([setting_path,'data_array'],'record_array')
 
 end
 
-function record_meta_reordered=relationship_flag_vs_dist(n_digit,save_path)
+function record_meta_reordered=relationship_flag_vs_dist(n_digit,setting_path)
 
 
-load([save_path,'data_array']);
+load([setting_path,'data_array']);
 
 red=record_array.red;
 white=record_array.white;
